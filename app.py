@@ -16,15 +16,7 @@ def gravar(v1, v2, v3):
     ficheiro = herokudb()
     db = ficheiro.cursor()
     db.execute("CREATE TABLE IF NOT EXISTS usr (nome text,email text, passe text)")
-    db.execute("INSERT INTO usr VALUES (%s, %s, %s)", (v1, v2, v3))
-    ficheiro.commit()
-    ficheiro.close()
-
-def gravar2(v1, v2):
-    ficheiro = herokudb()
-    db = ficheiro.cursor()
-    db.execute("CREATE TABLE IF NOT EXISTS inst (nome text, tipo text)")
-    db.execute("INSERT INTO inst VALUES (%s, %s)", (v1, v2))
+    db.execute("INSERT INTO usr VALUES (%s, %s, %s)", (v1, v2, code(v3)))
     ficheiro.commit()
     ficheiro.close()
 
@@ -37,19 +29,9 @@ def existe(v1):
         valor = db.fetchone()
         ficheiro.close()
     except:
-        valor=None
+        valor = None
     return valor
 
-def existe2(v1):
-    try:
-        ficheiro = herokudb()
-        db = ficheiro.cursor()
-        db.execute("SELECT * FROM inst WHERE nome = %s", (v1,))
-        valor = db.fetchone()
-        ficheiro.close()
-    except:
-        valor=None
-    return valor
 
 def log(v1, v2):
     ficheiro = herokudb()
@@ -63,7 +45,7 @@ def log(v1, v2):
 def alterar(v1, v2):
     ficheiro = herokudb()
     db = ficheiro.cursor()
-    db.execute("UPDATE usr SET passe = %s WHERE nome = %s", (v2, v1))
+    db.execute("UPDATE usr SET passe = %s WHERE nome = %s", (code(v2), v1))
     ficheiro.commit()
     ficheiro.close()
 
@@ -75,9 +57,11 @@ def apaga(v1):
     ficheiro.commit()
     ficheiro.close()
 
+
 def code(passe):
-        import hashlib
-        return hashlib.sha3_256(passe.encode()).hexdigest()
+    import hashlib
+    return hashlib.sha3_256(passe.encode()).hexdigest()
+
 
 @app.route('/registo', methods=['GET', 'POST'])
 def route():
@@ -92,21 +76,8 @@ def route():
         elif v3 != v4:
             erro = 'A palavra passe não coincide.'
         else:
-            gravar(v1, v2, code (v3))
+            gravar(v1, v2, v3)
     return render_template('registo.html', erro=erro)
-
-
-@app.route('/instrumentos', methods=['GET', 'POST'])
-def route2():
-    erro = None
-    if request.method == 'POST':
-        v1 = request.form['inst']
-        v2 = request.form['tipo']
-        if existe2(v1):
-            erro = 'O instrumento já existe.'
-        else:
-            gravar2(v1, v2)
-    return render_template('instrumentos.html', erro=erro)
 
 
 @app.route('/')
@@ -150,19 +121,35 @@ def newpasse():
     erro = None
     if request.method == 'POST':
         v1 = request.form['utilizador']
-        v2 = request.form['passew']
-        v3 = request.form['passe']
-        v4 = request.form['cpasse']
+        v0 = request.form['apasse']
+        v2 = request.form['passe']
+        v3 = request.form['cpasse']
         if not existe(v1):
             erro = 'O Utilizador não existe.'
-        elif v3 != v4:
-            erro = 'A palavra passe não coincide.'
-        elif not log(v1, v2):
+        elif not log(v1, v0):
             erro = 'A palavra passe está errada.'
+        elif v2 != v3:
+            erro = 'A palavra passe não coincide.'
         else:
-            alterar(v1, v3)
+            alterar(v1, v2)
     return render_template('newpasse.html', erro=erro)
 
+
+def lista():
+    try:
+        ficheiro = herokudb()
+        db = ficheiro.cursor()
+        db.execute("SELECT * FROM usr")
+        valor = db.fetchall()
+        ficheiro.close()
+    except:
+        valor = None
+    return valor
+
+@app.route('/search')
+def search():
+    usr = lista()
+    return render_template('search.html', usr=usr, max=len(usr))
 
 if __name__ == '__main__':
     app.run(debug=True)
