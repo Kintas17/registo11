@@ -2,7 +2,7 @@ from flask import Flask, render_template, request
 from user import User
 
 app = Flask(__name__)
-db = User()
+usr = User()
 
 @app.route('/registo', methods=['GET', 'POST'])
 def route():
@@ -12,13 +12,13 @@ def route():
         v2 = request.form['email']
         v3 = request.form['passe']
         v4 = request.form['cpasse']
-        if db.existe(v1):
+        if usr.existe(v1):
             erro = 'O Utilizador já existe.'
         elif v3 != v4:
             erro = 'A palavra passe não coincide.'
         else:
-            db.gravar(v1, v2, v3)
-    return render_template('registo.html', erro=erro)
+            usr.gravar(v1, v2, v3)
+    return render_template('Utilizadores/registo.html', erro=erro)
 
 
 @app.route('/')
@@ -32,13 +32,13 @@ def login():
     if request.method == 'POST':
         v1 = request.form['utilizador']
         v2 = request.form['passe']
-        if not db.existe(v1):
+        if not usr.existe(v1):
             erro = 'O Utilizador não existe.'
-        elif not db.log(v1, v2):
+        elif not usr.log(v1, v2):
             erro = 'A palavra passe está errada.'
         else:
             erro = 'Bem-Vindo.'
-    return render_template('login.html', erro=erro)
+    return render_template('Utilizadores/login.html', erro=erro)
 
 
 @app.route('/apagar', methods=['GET', 'POST'])
@@ -47,14 +47,14 @@ def apagar():
     if request.method == 'POST':
         v1 = request.form['utilizador']
         v2 = request.form['passe']
-        if not db.existe(v1):
+        if not usr.existe(v1):
             erro = 'O Utilizador não existe.'
-        elif not db.log(v1, v2):
+        elif not usr.log(v1, v2):
             erro = 'A palavra passe está errada.'
         else:
-            db.apaga(v1)
+            usr.apaga(v1)
             erro = 'Conta Eliminada com Sucesso.'
-    return render_template('apagar.html', erro=erro)
+    return render_template('Utilizadores/apagar.html', erro=erro)
 
 
 @app.route('/newpasse', methods=['GET', 'POST'])
@@ -65,21 +65,21 @@ def newpasse():
         v0 = request.form['apasse']
         v2 = request.form['passe']
         v3 = request.form['cpasse']
-        if not db.existe(v1):
+        if not usr.existe(v1):
             erro = 'O Utilizador não existe.'
-        elif not db.log(v1, v0):
+        elif not usr.log(v1, v0):
             erro = 'A palavra passe está errada.'
         elif v2 != v3:
             erro = 'A palavra passe não coincide.'
         else:
-            db.alterar(v1, v2)
-    return render_template('newpasse.html', erro=erro)
+            usr.alterar(v1, v2)
+    return render_template('Utilizadores/newpasse.html', erro=erro)
 
 
 @app.route('/search')
 def search():
-    usr = db.lista()
-    return render_template('search.html', usr=usr, max=len(usr))
+    dados = usr.lista()
+    return render_template('Utilizadores/search.html', tabela=dados, max=len(dados))
 
 if __name__ == '__main__':
     app.run(debug=True)
