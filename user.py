@@ -22,11 +22,15 @@ class User:
 
 
     def apagarusr(self):
-        ficheiro = self.herokudb()
-        db = ficheiro.cursor()
-        db.execute("drop table usr")
-        ficheiro.commit()
-        ficheiro.close()
+        try:
+            ficheiro = self.herokudb()
+            db = ficheiro.cursor()
+            db.execute("drop table usr")
+            ficheiro.commit()
+            ficheiro.close()
+        except:
+            erro = "A tabela nao existe."
+        return erro
 
 
     def gravar(self, login, email, password):
