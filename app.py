@@ -1,8 +1,24 @@
 from flask import Flask, render_template, request, redirect
 from user import User
+from artigos import Artigos
 
 app = Flask(__name__)
 usr = User()
+art = Artigos()
+
+
+@app.route('/inserirA', methods=['GET', 'POST'])
+def inserirA():
+    erro = None
+    if request.method == 'POST':
+        v1 = request.form['category']
+        v2 = request.form['brand']
+        v3 = request.form['description']
+        v4 = request.form['price']
+        art.inserirA(v1, v2, v3, v4)
+        erro = 'Artigo Inserido com sucesso'
+    return render_template('Artigos/inserirA.html', erro=erro, usr=usr, art=art)
+
 
 @app.route('/registo', methods=['GET', 'POST'])
 def route():
@@ -19,12 +35,12 @@ def route():
         else:
             erro = 'Utilizador criado com sucesso.'
             usr.gravar(v1, v2, v3)
-    return render_template('Utilizadores/registo.html', erro=erro,usr = usr)
+    return render_template('Utilizadores/registo.html', erro=erro, usr=usr)
 
 
 @app.route('/')
 def index():
-    return render_template('index.html',usr = usr)
+    return render_template('index.html', usr=usr)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -41,6 +57,7 @@ def login():
             usr.login = v1
             erro = 'Bem-Vindo.'
     return render_template('Utilizadores/login.html', erro=erro, usr=usr)
+
 
 @app.route('/logout')
 def logout():
@@ -61,7 +78,7 @@ def apagar():
         else:
             usr.apaga(v1)
             erro = 'Conta Eliminada com Sucesso.'
-    return render_template('Utilizadores/apagar.html', erro=erro,usr = usr)
+    return render_template('Utilizadores/apagar.html', erro=erro, usr=usr)
 
 
 @app.route('/newpasse', methods=['GET', 'POST'])
@@ -80,7 +97,7 @@ def newpasse():
             erro = 'A palavra passe não coincide.'
         else:
             usr.alterar(v1, v2)
-    return render_template('Utilizadores/newpasse.html', erro=erro,usr = usr)
+    return render_template('Utilizadores/newpasse.html', erro=erro, usr=usr)
 
 
 @app.route('/search')
@@ -88,5 +105,6 @@ def search():
     dados = usr.lista()
     return render_template('Utilizadores/search.html', tabela=dados, max=len(dados), usr=usr)
 
-if __name__ =='__main__':
+
+if __name__ == '__main__':
     app.run(debug=True)
