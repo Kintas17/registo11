@@ -1,7 +1,7 @@
 import psycopg2
 
-class User:
 
+class User:
 
     def __init__(self):
         self.reset()
@@ -18,8 +18,8 @@ class User:
     def herokudb(self):
         from db import Database
         mydb = Database()
-        return psycopg2.connect(host=mydb.Host, database=mydb.Database, user=mydb.User, password=mydb.Password, sslmode='require')
-
+        return psycopg2.connect(host=mydb.Host, database=mydb.Database, user=mydb.User, password=mydb.Password,
+                                sslmode='require')
 
     def apagarusr(self):
         try:
@@ -32,11 +32,11 @@ class User:
             erro = "A tabela nao existe."
         return erro
 
-
     def gravar(self, login, email, password):
         ficheiro = self.herokudb()
         db = ficheiro.cursor()
-        db.execute("CREATE TABLE IF NOT EXISTS usr ( id serial primary Key,login text,email text, password text, nif text, nome text, morada text)")
+        db.execute(
+            "CREATE TABLE IF NOT EXISTS usr ( id serial primary Key,login text,email text, password text, nif text, nome text, morada text)")
         db.execute("INSERT INTO usr VALUES (DEFAULT ,%s, %s, %s)", (login, email, self.code(password),))
         ficheiro.commit()
         ficheiro.close()
@@ -74,11 +74,24 @@ class User:
         ficheiro.commit()
         ficheiro.close()
 
+    @property
     def lista(self):
         try:
             ficheiro = self.herokudb()
             db = ficheiro.cursor()
             db.execute("SELECT * FROM usr")
+            valor = db.fetchall()
+            ficheiro.close()
+        except:
+            valor = ""
+        return valor
+
+    @property
+    def campos(self):
+        try:
+            ficheiro = self.herokudb()
+            db = ficheiro.cursor()
+            db.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'usr'")
             valor = db.fetchall()
             ficheiro.close()
         except:

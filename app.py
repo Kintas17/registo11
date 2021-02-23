@@ -102,8 +102,14 @@ def newpasse():
 
 @app.route('/search')
 def search():
-    dados = usr.lista()
-    return render_template('Utilizadores/search.html', tabela=dados, max=len(dados), usr=usr)
+    title = "Lista Utilizadores"
+    return render_template('search.html', title=title, tabela=usr.lista, campos=usr.campos, usr=usr)
+
+
+@app.route('/consultarA')
+def consultarA():
+    title = "Lista Artigos "
+    return render_template('search.html', title=title, tabela=art.lista, campos=art.campos, usr=usr)
 
 
 if __name__ == '__main__':
