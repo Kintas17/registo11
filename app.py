@@ -20,6 +20,27 @@ def inserirA():
     return render_template('Artigos/inserirA.html', erro=erro, usr=usr, art=art)
 
 
+@app.route('/editarA', methods=['GET', 'POST'])
+def editarA():
+    erro = None
+    if request.method == 'POST':
+        if art.id:
+            if "cancel" in request.form:
+                art.reset()
+            elif "delete" in request.form:
+                art.apagaA(art.id)
+                erro = "Artigo eliminado com sucesso"
+            elif "edit" in request.form:
+                v1 = request.form['price']
+                art.alterarA(art.id, v1)
+                art.select(art.id)  # Atualizar os dados na classe
+                erro = "Preço alterado com sucesso"
+        else:
+            v1 = request.form['id']
+            erro = art.select(v1)
+    return render_template('Artigos/editarA.html', erro=erro, usr=usr, art=art)
+
+
 @app.route('/registo', methods=['GET', 'POST'])
 def route():
     erro = None
@@ -41,6 +62,19 @@ def route():
 @app.route('/')
 def index():
     return render_template('index.html', usr=usr)
+
+
+@app.route('/procurar', methods=['GET', 'POST'])
+def procurar():
+    erro = None
+    if request.method == 'POST':
+        v1 = request.form['id']
+        if not art.existeA(v1):
+            erro = 'O artigo não existe'
+        if art.existeA(v1):
+            title = 'Artigo'
+            return render_template('search.html', title=title, tabela=art.listaA(v1), campos=art.campos, usr=usr)
+    return render_template('Artigos/procurar.html', erro=erro, usr=usr, art=art)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -70,15 +104,25 @@ def apagar():
     erro = None
     if request.method == 'POST':
         v1 = request.form['utilizador']
-        v2 = request.form['passe']
         if not usr.existe(v1):
             erro = 'O Utilizador não existe.'
-        elif not usr.log(v1, v2):
-            erro = 'A palavra passe está errada.'
         else:
             usr.apaga(v1)
             erro = 'Conta Eliminada com Sucesso.'
     return render_template('Utilizadores/apagar.html', erro=erro, usr=usr)
+
+
+@app.route('/eliminarA', methods=['GET', 'POST'])
+def eliminar():
+    erro = None
+    if request.method == 'POST':
+        v1 = request.form['id']
+        if not art.existeA(v1):
+            erro = 'O Artigo não existe.'
+        else:
+            art.apaga(v1)
+            erro = 'Artigo Eliminado com Sucesso.'
+    return render_template('Artigos/editarA.html', erro=erro, usr=usr)
 
 
 @app.route('/newpasse', methods=['GET', 'POST'])

@@ -1,7 +1,7 @@
 import psycopg2
 
-class Artigos:
 
+class Artigos:
 
     def __init__(self):
         self.reset()
@@ -21,13 +21,14 @@ class Artigos:
     def herokudb(self):
         from db import Database
         mydb = Database()
-        return psycopg2.connect(host=mydb.Host, database=mydb.Database, user=mydb.User, password=mydb.Password, sslmode='require')
-
+        return psycopg2.connect(host=mydb.Host, database=mydb.Database, user=mydb.User, password=mydb.Password,
+                                sslmode='require')
 
     def inserirA(self, category, brand, description, price):
         ficheiro = self.herokudb()
         db = ficheiro.cursor()
-        db.execute("CREATE TABLE IF NOT EXISTS artigos ( id serial primary Key,category text,brand text, description text, price numeric, reference text, ean text, stock int, created date, updated text)")
+        db.execute(
+            "CREATE TABLE IF NOT EXISTS artigos ( id serial primary Key,category text,brand text, description text, price numeric, reference text, ean text, stock int, created date, updated text)")
         db.execute("INSERT INTO artigos VALUES (DEFAULT ,%s, %s, %s, %s)", (category, brand, description, price))
         ficheiro.commit()
         ficheiro.close()
@@ -43,12 +44,11 @@ class Artigos:
             erro = "A tabela nao existe."
         return erro
 
-
-    def existe(self, login):
+    def existeA(self, id):
         try:
             ficheiro = self.herokudb()
             db = ficheiro.cursor()
-            db.execute("SELECT * FROM usr WHERE login = %s", (login,))
+            db.execute("SELECT * FROM artigos WHERE id = %s", (id,))
             valor = db.fetchone()
             ficheiro.close()
         except:
@@ -63,10 +63,10 @@ class Artigos:
         ficheiro.close()
         return valor
 
-    def alterar(self, login, password):
+    def alterarA(self, id, price):
         ficheiro = self.herokudb()
         db = ficheiro.cursor()
-        db.execute("UPDATE usr SET password = %s WHERE login = %s", (self.code(password), login))
+        db.execute("UPDATE artigos SET price = %s WHERE id = %s", (price, id))
         ficheiro.commit()
         ficheiro.close()
 
@@ -77,17 +77,24 @@ class Artigos:
         ficheiro.commit()
         ficheiro.close()
 
-
     @property
     def lista(self):
         try:
             ficheiro = self.herokudb()
             db = ficheiro.cursor()
-            db.execute("SELECT * FROM artigos")
+            db.execute("select * from artigos")
             valor = db.fetchall()
             ficheiro.close()
         except:
             valor = ""
+        return valor
+
+    def listaA(self, id):
+        ficheiro = self.herokudb()
+        db = ficheiro.cursor()
+        db.execute("select * from artigos WHERE id = %s", (id,))
+        valor = db.fetchall()
+        ficheiro.close()
         return valor
 
     @property
@@ -106,3 +113,35 @@ class Artigos:
     def code(passe):
         import hashlib
         return hashlib.sha3_256(passe.encode()).hexdigest()
+
+    def procurar(self, id):
+        ficheiro = self.herokudb()
+        db = ficheiro.cursor()
+        db.execute("SELECT * FROM artigos WHERE id = %s", (id,))
+        ficheiro.commit()
+        ficheiro.close()
+
+    def apagaA(self, id):
+        ficheiro = self.herokudb()
+        db = ficheiro.cursor()
+        db.execute("DELETE FROM artigos WHERE id = %s", (id,))
+        ficheiro.commit()
+        ficheiro.close()
+
+    def select(self, id):
+        erro = None
+        try:
+            ficheiro = self.herokudb()
+            db = ficheiro.cursor()
+            db.execute("select * from artigos where id = %s", (id,))
+            valor = db.fetchone()
+            ficheiro.close()
+            self.id = valor[0]  # Número do produto
+            self.category = valor[1]  # Categoria
+            self.brand = valor[2]  # Marca
+            self.description = valor[3]  # Descrição
+            self.price = valor[4]  # Preço
+        except:
+            self.reset()
+            erro = "O artigo não existe!"
+        return erro
